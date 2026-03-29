@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atal Sureka - Portfolio OS</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 17px;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Taskbar */
+    #taskbar {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      gap: 10px;
+    }
+    .taskbar-dot { width: 14px; height: 14px; border-radius: 50%; }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green { background: #28c840; }
+    #taskbar-title {
+      flex: 1;
+      text-align: center;
+      color: #8b949e;
+      font-size: 16px;
+    }
+    #clock {
+      color: #8b949e;
+      font-size: 16px;
+    }
+
+    /* Desktop */
+    #desktop {
+      display: flex;
+      height: calc(100vh - 44px);
+    }
+
+    /* Sidebar */
+    #sidebar {
+      width: 240px;
+      background: #161b22;
+      border-right: 1px solid #30363d;
+      padding: 20px 0;
+      flex-shrink: 0;
+    }
+    .sidebar-section {
+      padding: 10px 20px 6px;
+      font-size: 13px;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .sidebar-item {
+      padding: 10px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #8b949e;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sidebar-item:hover { background: #21262d; color: #c9d1d9; }
+    .sidebar-item.active { background: #21262d; color: #58a6ff; border-left: 3px solid #58a6ff; }
+    .sidebar-icon { width: 18px; text-align: center; }
+
+    /* Main content */
+    #main {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Panel */
+    .panel {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      padding: 32px;
+      animation: fadeIn 0.2s ease;
+    }
+    .panel.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0d1117; }
+    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+    /* Terminal prompt */
+    .prompt { color: #58a6ff; }
+    .prompt-path { color: #3fb950; }
+    .prompt-symbol { color: #c9d1d9; }
+    h1 { font-size: 26px; color: #e6edf3; margin-bottom: 6px; }
+    h2 { font-size: 16px; color: #58a6ff; margin: 24px 0 10px; text-transform: uppercase; letter-spacing: 1px; }
+    h2::before { content: '// '; color: #3fb950; }
+
+    .tag {
+      display: inline-block;
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #79c0ff;
+      padding: 3px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      margin: 3px;
+    }
+    .tag.green { color: #3fb950; border-color: #3fb950; }
+    .tag.yellow { color: #e3b341; border-color: #e3b341; }
+
+    /* Experience cards */
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .card-title { color: #e6edf3; font-size: 18px; font-weight: bold; }
+    .card-company { color: #58a6ff; font-size: 15px; }
+    .card-date { color: #8b949e; font-size: 14px; }
+    .card ul { padding-left: 20px; }
+    .card li { color: #8b949e; margin: 6px 0; font-size: 15px; line-height: 1.6; }
+    .card li::marker { color: #3fb950; }
+
+    /* Project cards */
+    .project-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+    .project-title { color: #e6edf3; font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+    .project-badge {
+      display: inline-block;
+      background: #3fb95033;
+      border: 1px solid #3fb950;
+      color: #3fb950;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-left: 10px;
+    }
+    .project-desc { color: #8b949e; font-size: 15px; margin: 10px 0; line-height: 1.7; }
+
+    /* Contact */
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid #21262d;
+      color: #c9d1d9;
+    }
+    .contact-label { color: #8b949e; width: 100px; font-size: 15px; }
+    .contact-value { color: #58a6ff; font-size: 16px; }
+
+    /* Welcome screen */
+    #welcome-ascii {
+      color: #3fb950;
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 20px;
+    }
+    .welcome-line { color: #8b949e; font-size: 16px; margin: 6px 0; }
+    .welcome-line span { color: #58a6ff; }
+    .blink { animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .skill-group { margin-bottom: 14px; }
+    .skill-label { color: #8b949e; font-size: 14px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+<div id="taskbar">
+  <div class="taskbar-dot dot-red"></div>
+  <div class="taskbar-dot dot-yellow"></div>
+  <div class="taskbar-dot dot-green"></div>
+  <div id="taskbar-title">AtalOS v1.0 — Portfolio</div>
+  <div id="clock"></div>
+</div>
+
+<div id="desktop">
+  <div id="sidebar">
+    <div class="sidebar-section">Navigate</div>
+    <div class="sidebar-item active" data-panel="home">
+      <span class="sidebar-icon">~</span> Home
+    </div>
+    <div class="sidebar-item" data-panel="about">
+      <span class="sidebar-icon">&gt;</span> About
+    </div>
+    <div class="sidebar-item" data-panel="experience">
+      <span class="sidebar-icon">#</span> Experience
+    </div>
+    <div class="sidebar-item" data-panel="projects">
+      <span class="sidebar-icon">*</span> Projects
+    </div>
+    <div class="sidebar-item" data-panel="skills">
+      <span class="sidebar-icon">$</span> Skills
+    </div>
+    <div class="sidebar-section" style="margin-top:16px">Contact</div>
+    <div class="sidebar-item" data-panel="contact">
+      <span class="sidebar-icon">@</span> Contact
+    </div>
+  </div>
+
+  <div id="main">
+
+    <!-- HOME -->
+    <div class="panel active" id="panel-home">
+      <pre id="welcome-ascii">
+   _   _        _   ____                  _
+  / \ | |_ __ _| | / ___| _   _ _ __ ___| | ____ _
+ / _ \| __/ _` | | \___ \| | | | '__/ _ \ |/ / _` |
+/ ___ \ || (_| | |  ___) | |_| | | |  __/   < (_| |
+/_/   \_\__\__,_|_| |____/ \__,_|_|  \___|_|\_\__,_|
+      </pre>
+      <div class="welcome-line"><span>visitor@portfolio</span>:~$ whoami</div>
+      <div class="welcome-line" style="color:#c9d1d9; margin: 8px 0 16px;">Atal Sureka — Full Stack Engineer</div>
+      <div class="welcome-line"><span>visitor@portfolio</span>:~$ cat intro.txt</div>
+      <div class="welcome-line" style="color:#c9d1d9; margin: 8px 0; line-height: 1.8;">
+        MS in Information Technology @ Clark University<br>
+        Currently building @Student_Succeed, Boston MA<br>
+        Python · TypeScript · React · FastAPI · PostgreSQL · AI/ML
+      </div>
+      <div class="welcome-line"><span>visitor@portfolio</span>:~$ <span class="blink">_</span></div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="panel" id="panel-about">
+      <h1>Atal Sureka</h1>
+      <div style="color:#8b949e; margin-bottom:16px; font-size:16px;">Full Stack Engineer · Boston, MA</div>
+
+      <h2>Education</h2>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Clark University</div>
+            <div class="card-company">M.S. Information Technology</div>
+          </div>
+          <div class="card-date">Aug 2023 – May 2025</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">North-Eastern Hill University</div>
+            <div class="card-company">B.Tech Electronics & Communication</div>
+          </div>
+          <div class="card-date">Aug 2017 – Sep 2021</div>
+        </div>
+      </div>
+
+      <h2>About Me</h2>
+      <div style="color:#8b949e; line-height:1.8; font-size:15px;">
+        Full Stack Engineer with experience building production systems at the intersection of backend logic,
+        real-time data, and intelligent automation. I've shipped decision engines, scheduling systems,
+        patient monitoring platforms, and AI pipelines — always focused on reliability, performance, and clean architecture.
+      </div>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="panel" id="panel-experience">
+      <h1>Experience</h1>
+
+      <h2>Current</h2>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Full Stack Engineer</div>
+            <div class="card-company">Student Succeed · Boston, MA</div>
+          </div>
+          <div class="card-date">Jan 2025 – Present</div>
+        </div>
+        <div style="margin-bottom:6px;">
+          <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">PostgreSQL</span>
+          <span class="tag">React</span><span class="tag">Next.js</span><span class="tag">TypeScript</span>
+        </div>
+        <ul>
+          <li>Engineered a decision engine with 50+ DB-loaded rules driving students through a 12-phase journey</li>
+          <li>Built an enum-based state machine handling 12 journey phases and 30+ questionnaire variants</li>
+          <li>Implemented graph-based phase ordering using topological sorting to resolve task dependencies</li>
+          <li>Built mentor scheduling on Google Calendar OAuth 2.0 — zero double-bookings across all calendars</li>
+          <li>Cut external API response time by 60% using Python asyncio + httpx concurrent requests</li>
+          <li>Built environment-aware URL management system eliminating deployment errors</li>
+        </ul>
+      </div>
+
+      <h2>Previous</h2>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Medical Technology Solutions Engineer</div>
+            <div class="card-company">Oassire Healthcare · India</div>
+          </div>
+          <div class="card-date">Sep 2021 – Jun 2023</div>
+        </div>
+        <div style="margin-bottom:6px;">
+          <span class="tag">Python</span><span class="tag">Flask</span><span class="tag">Raspberry Pi</span>
+          <span class="tag">PostgreSQL</span><span class="tag">pandas</span>
+        </div>
+        <ul>
+          <li>Deployed real-time vitals monitoring on Raspberry Pi 4B, streaming 8 sensors at 1-second intervals</li>
+          <li>Reduced average clinical response time by ~30%</li>
+          <li>Automated lab report generation with ETL pipelines — eliminated 40% of prior transcription errors</li>
+          <li>Increased throughput by 70% with structured PostgreSQL data models and schema validation</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="panel" id="panel-projects">
+      <h1>Projects</h1>
+
+      <div class="project-card">
+        <div class="project-title">
+          Visual-Linguistic Encoding
+          <span class="project-badge">Hackathon Winner</span>
+        </div>
+        <div style="margin: 6px 0;">
+          <span class="tag">Python</span><span class="tag">PyTorch</span>
+          <span class="tag">CLIP</span><span class="tag">Stable Diffusion</span><span class="tag">Streamlit</span>
+        </div>
+        <div class="project-desc">
+          AI pipeline that converts text → image → text using CLIP for embedding alignment and Stable Diffusion
+          for image generation. Validated across 200+ test prompts with strong semantic round-trip accuracy.
+          Async processing and caching cut response latency by 40% in limited-compute environments.
+        </div>
+        <div style="color:#3fb950; font-size:14px;">Clark University Hackathon Winner</div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-title">PC Security Alert System</div>
+        <div style="margin: 6px 0;">
+          <span class="tag">Python</span><span class="tag">OpenCV</span>
+          <span class="tag">SMTP</span><span class="tag">dotenv</span>
+        </div>
+        <div class="project-desc">
+          Python desktop tool that captures a webcam image on startup and emails it via SMTP to detect
+          unauthorized access. Secure credential handling via Gmail app passwords and .env/config.py setup.
+          Documented startup automation for Windows, macOS, and Linux.
+        </div>
+      </div>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="panel" id="panel-skills">
+      <h1>Skills</h1>
+
+      <h2>Languages</h2>
+      <div>
+        <span class="tag green">Python</span>
+        <span class="tag green">TypeScript</span>
+        <span class="tag green">JavaScript</span>
+        <span class="tag green">SQL</span>
+      </div>
+
+      <h2>Backend</h2>
+      <div>
+        <span class="tag">FastAPI</span>
+        <span class="tag">Flask</span>
+        <span class="tag">REST APIs</span>
+        <span class="tag">Async Programming</span>
+        <span class="tag">Distributed Systems</span>
+        <span class="tag">State Machines</span>
+      </div>
+
+      <h2>Frontend</h2>
+      <div>
+        <span class="tag">React</span>
+        <span class="tag">Next.js</span>
+        <span class="tag">HTML5</span>
+      </div>
+
+      <h2>Databases</h2>
+      <div>
+        <span class="tag yellow">PostgreSQL</span>
+        <span class="tag yellow">Data Modeling</span>
+        <span class="tag yellow">ETL Pipelines</span>
+      </div>
+
+      <h2>AI / ML</h2>
+      <div>
+        <span class="tag">PyTorch</span>
+        <span class="tag">CLIP</span>
+        <span class="tag">Stable Diffusion</span>
+      </div>
+
+      <h2>Tools</h2>
+      <div>
+        <span class="tag">Git</span>
+        <span class="tag">Linux</span>
+        <span class="tag">Cron Jobs</span>
+        <span class="tag">Environment Variables</span>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="panel" id="panel-contact">
+      <h1>Contact</h1>
+      <div style="color:#8b949e; margin-bottom:20px; font-size:16px;">Feel free to reach out!</div>
+
+      <div class="contact-item">
+        <div class="contact-label">Email</div>
+        <div class="contact-value">asureka2801@gmail.com</div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-label">Phone</div>
+        <div class="contact-value">(774) 823-8473</div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-label">LinkedIn</div>
+        <div class="contact-value">linkedin.com/in/atalsureka</div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-label">GitHub</div>
+        <div class="contact-value">github.com/atalsureka</div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-label">Location</div>
+        <div class="contact-value" style="color:#c9d1d9;">Boston, MA</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Clock
+  function updateClock() {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Navigation
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const panelId = item.getAttribute('data-panel');
+      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('panel-' + panelId).classList.add('active');
+    });
+  });
+
+  // Forward mouse events to parent for camera control
+  document.addEventListener('mousemove', e => {
+    window.parent.postMessage({ type: 'mousemove', clientX: e.clientX, clientY: e.clientY }, '*');
+  });
+  document.addEventListener('mousedown', e => {
+    window.parent.postMessage({ type: 'mousedown' }, '*');
+  });
+  document.addEventListener('mouseup', e => {
+    window.parent.postMessage({ type: 'mouseup' }, '*');
+  });
+</script>
+
+</body>
+</html>
