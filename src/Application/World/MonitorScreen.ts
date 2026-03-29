@@ -183,7 +183,7 @@ export default class MonitorScreen extends EventEmitter {
         };
 
         // Set iframe attributes
-        iframe.src = '/portfolio/index.html';
+        iframe.src = './portfolio/index.html';
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('dev')) {
             iframe.src = 'http://localhost:3000/';
